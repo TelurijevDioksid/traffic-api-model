@@ -1,5 +1,5 @@
 **/__pycache__/
 **/venv/
 **/.env
-**/astgcn_model.pth
-model-api/data/vel.csv
+# **/astgcn_model.pth
+# model-api/data/vel.csv
