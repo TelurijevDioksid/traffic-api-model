@@ -87,6 +87,7 @@ type HealthResponse struct {
 }
 
 func waitApi() {
+	fmt.Println("Waiting for model to be ready...")
 	for {
 		time.Sleep(5 * time.Second)
 
@@ -276,7 +277,7 @@ func main() {
 			if err = retrain(); err != nil {
 				log.Fatalln("Could not retrain:", err)
 			}
-			fmt.Println("\nModel update sqcheduled. Sleeping...")
+			fmt.Println("\nModel update scheduled. Sleeping...")
 			time.Sleep(40 * time.Second)
 
 			readingsBatch = [][]float64{}
