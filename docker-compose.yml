@@ -1,0 +1,34 @@
+version: "3.9"
+
+services:
+  model-api:
+    build:
+      context: ./model-api
+      dockerfile: Dockerfile
+    container_name: model-api
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    networks:
+      - app-network
+    environment:
+      PORT: "8000"
+
+  agent:
+    build:
+      context: ./agent
+      dockerfile: Dockerfile
+    container_name: agent
+    restart: unless-stopped
+    depends_on:
+      - model-api
+    networks:
+      - app-network
+    environment:
+      API_URL: "http://model-api:8000"
+      SENSOR_DATA_URL: "http://model-api:8000"
+      LOAD_ENV_FILE: "N"
+
+networks:
+  app-network:
+    driver: bridge
