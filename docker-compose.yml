@@ -13,6 +13,7 @@ services:
       - app-network
     environment:
       PORT: "8000"
+      HOST: "0.0.0.0"
 
   agent:
     build:
@@ -27,7 +28,6 @@ services:
     environment:
       API_URL: "http://model-api:8000"
       SENSOR_DATA_URL: "http://model-api:8000"
-      LOAD_ENV_FILE: "N"
 
 networks:
   app-network:

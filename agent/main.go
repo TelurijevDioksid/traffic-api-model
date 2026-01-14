@@ -61,7 +61,7 @@ func loadEnv() error {
 }
 
 func init() {
-	if os.Getenv("LOAD_ENV_FILE") == "" {
+	if os.Getenv("API_URL") == "" {
 		if err := loadEnv(); err != nil {
 			log.Fatalln("Could not load env.", err)
 		}
