@@ -8,3 +8,10 @@ class DataInput(BaseModel):
 
 class PredictionBody(BaseModel):
     data: List[List[float]]
+
+
+class OnlineTrain(BaseModel):
+    """
+    data_step: koliko nedavnih mjerenja smatramo novim
+    """
+    data_step: int = 48

@@ -31,7 +31,7 @@ def startup_event():
 
 @app.get("/health")
 def health_check():
-    return {"status": model_manager.status, "device": str(DEVICE)}
+    return {"status": model_manager.status, "device": str(DEVICE) }
 
 
 @app.post("/add-data")
@@ -57,6 +57,18 @@ def retrain_model(background_tasks: BackgroundTasks):
 
     background_tasks.add_task(model_manager.train, WINDOW_SIZE)
     return {"message": "Retraining started in background"}
+
+
+@app.post("/train-online")
+def retrain_online_model(body: OnlineTrain, background_tasks: BackgroundTasks):
+    if model_manager.status == "Initializing":
+        raise HTTPException(status_code=503, detail="Model not available")
+
+    if model_manager.status != "Ready":
+        raise HTTPException(status_code=503, detail="Model not available")
+
+    background_tasks.add_task(model_manager.online_train, body.data_step)
+    return { "message": "Online training task started" }
 
 
 @app.post("/predict")

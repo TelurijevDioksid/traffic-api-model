@@ -17,13 +17,14 @@ import (
 
 var SENZOR_NUM = 228
 var SENZOR_DATA_BATCH = 12
-var RETRAIN_DATA_NUM = 24
+var RETRAIN_DATA_NUM = 48
 var (
-	SENZOR_DATA_URL string
-	PREDICT_URL     string
-	ADD_DATA_URL    string
-	RETRAIN_URL     string
-	HEALTH_URL      string
+	SENZOR_DATA_URL    string
+	PREDICT_URL        string
+	ADD_DATA_URL       string
+	RETRAIN_URL        string
+	ONLINE_RETRAIN_URL string
+	HEALTH_URL         string
 )
 
 func loadEnv() error {
@@ -71,6 +72,7 @@ func init() {
 	PREDICT_URL = fmt.Sprintf("%s/predict", url)
 	ADD_DATA_URL = fmt.Sprintf("%s/add-data", url)
 	RETRAIN_URL = fmt.Sprintf("%s/train", url)
+	ONLINE_RETRAIN_URL = fmt.Sprintf("%s/train-online", url)
 	HEALTH_URL = fmt.Sprintf("%s/health", url)
 
 	url = os.Getenv("SENSOR_DATA_URL")
@@ -86,8 +88,11 @@ type HealthResponse struct {
 	Device string `json:"device"`
 }
 
+type OnlineTrain struct {
+	DataStep int64 `json:"data_step"`
+}
+
 func waitApi() {
-	fmt.Println("Waiting for model to be ready...")
 	for {
 		time.Sleep(5 * time.Second)
 
@@ -104,7 +109,6 @@ func waitApi() {
 		resp.Body.Close()
 
 		if data.Status == "Ready" {
-			fmt.Println("Model is Ready")
 			break
 		}
 	}
@@ -210,7 +214,29 @@ func retrain() error {
 	return nil
 }
 
+func onlineTrain() error {
+	payload := OnlineTrain{DataStep: 48}
+
+	body, err := json.Marshal(payload)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	resp, err := http.Post(ONLINE_RETRAIN_URL, "application/json", bytes.NewBuffer(body))
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		return errors.New("failed to retrain")
+	}
+
+	return nil
+}
+
 func main() {
+	fmt.Println("Waiting for model to be ready...")
 	waitApi()
 
 	var readingsBatch [][]float64
@@ -274,11 +300,12 @@ func main() {
 			}
 			fmt.Println("\nData added")
 
-			if err = retrain(); err != nil {
+			if err = onlineTrain(); err != nil {
 				log.Fatalln("Could not retrain:", err)
 			}
-			fmt.Println("\nModel update scheduled. Sleeping...")
-			time.Sleep(40 * time.Second)
+			fmt.Println("\nModel update scheduled. Waiting...")
+
+			waitApi()
 
 			readingsBatch = [][]float64{}
 		}
