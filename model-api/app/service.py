@@ -178,7 +178,6 @@ class ModelManager:
                 self.status = "Ready"
                 return
 
-            # Za 48 novih i Batch Size 64, dodano je 3072 starih mjerenja
             num_history = (BATCH_SIZE - 1) * len(new_indices)
             history_pool = list(range(LEN_INPUT, start_new_idx))
 
@@ -197,7 +196,7 @@ class ModelManager:
                 self.status = "Ready"
                 return
 
-            X_batch = X_batch.transpose(1, 2).unsqueeze(2) # (Batch, Node, 1, Time)
+            X_batch = X_batch.transpose(1, 2).unsqueeze(2)
             Y_batch = Y_batch.transpose(1, 2)
 
             dataset = TensorDataset(X_batch, Y_batch)
